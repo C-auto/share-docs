@@ -19,6 +19,120 @@
 
 사실 스레드는 프로세스를 단순히 나눈 단위가 아닌 중요한 차이가 있는데 그것은 바로 "메인 메모리를 어떻게 함께 사용하는지"입니다. 멀티 프로세싱에서 각각의 프로세스는 각각 독립된 메모리 공간을 사용하며, 한번에 실행되는 프로세스가 많다는 의미는 그 만큼 많은 메인 메모리를 사용한다는 것을 의미합니다. 반면 스레드는 동일한 프로세스 내에 모든 스레드가 메모리를 공유하게 됩니다. 즉 아무리 스레드가 많아져도 메모리를 차지 않고 프로세스와 달리 메모리를 옮겨 다닐 필요가 없기 때문에 컨택스트 스위칭의 부담이 덜하는 장점이 있습니다. 이렇게 보았을 때 성능 상 스레드가 유리하지만 같은 메모리 공간을 여러 스레드가 공유해서 사용하는 만큼 발생하는 오류에 대해  추가적인 프로그래밍이 필요하다는 문제점이 있습니다.
 
+<br>
+
+## #2. Multi processing
+멀티프로세싱은 여러 개의 프로개램이 각각의 프로세서에서 하나의 작업만 처리하는 것이 아니라 다수의 작업을 처리하며, 하나의 작업은 하나의 프로세서에 의해 처리되는 것이 아닌 다수의 프로세서에 의해 처리됩니다. 멀티 프로세스의 장점 중 하나는 여러 개의 프로세스를 처리해야하는 데 동일한 데이터가 하나의 디스크(메모리 아님!!)에 처리될 경우 모든 프로세스가 이를 공유하게 되면 비용적으로 저렴해집니다.(프로세스는 동일한 메모리를 공유하지 않기 때문에 메모리를 공유하는 작업은 오히려 더 큰 비용이 발생합니다.) 또한, 하나의 프로세스가 하나의 작업만 처리한다면 특정 프로세스에 장애가 날 경우 다른 프로세스가 해당 작업을 처리하기 때문에 작업이 정지되는 문제를 방지할 수 있습니다.
+
+### Multiprocessing 모듈로 멀티프로세싱 구현
+Multi processing과 Multi threading을 비교하기 위해 1에서 100000000까지 더하는 함수를 각각 두개의 프로세스와 쓰레드로 실행하는 코드를 작성합니다. Multiprocess는 파이썬 multiprocessing 라이브러리를 사용했습니다.
+[공식문서](https://docs.python.org/ko/3/library/multiprocessing.html)
+
+```python
+import multiprocessing
+import time
+
+def calculate_sum(start, end):
+    result = 0
+    for num in range(start, end + 1):
+        result += num
+    return result
+
+def calculate_total_sum_parallel():
+    start_time = time.time()
+    total = 0
+    num_processes = 2
+
+    # Calculate the range for each process
+    total_range = 100000000
+    chunk_size = total_range // num_processes
+    ranges = [(i * chunk_size + 1, (i + 1) * chunk_size) for i in range(num_processes)]
+
+    # Create a pool of processes
+    pool = multiprocessing.Pool(processes=num_processes)
+
+    # Use map to distribute the workload to processes
+    results = pool.starmap(calculate_sum, ranges)
+
+    # Combine the results from different processes
+    total = sum(results)
+
+    pool.close()
+    pool.join()
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+
+    return total, execution_time
+
+if __name__ == "__main__":
+    total_sum, execution_time = calculate_total_sum_parallel()
+    print(f"Total sum: {total_sum}")
+    print(f"Execution time: {execution_time:.4f} seconds")
+```
+
+- 실행 결과 : Execution time: 5.8471 seconds
+
+<br>
+
+## #3. Multi threading
+멀티쓰레딩은 하나의 프로세스 아래의 여러 쓰레드가 하나의 데이터 자원을 공유하며 하나의 작업을 여러 쓰레드에 의해 처리됩니다. 여러 개의 쓰레드는 하나의 데이터 자원(메모리)를 공유하기 때문에 메모리에 대한 효율성을 가질 수 있습니다.
+
+### concurrent.futures 모듈로 Multi Threading 구현
+멀티 쓰레딩을 구현할 수 있는 여러 모듈 중 concurrent.futures를 사용하여 멀티프로세싱과 동일한 역할을 하는 예시 구현
+```python
+import concurrent.futures
+import time
+
+def calculate_sum(start, end):
+    result = 0
+    for num in range(start, end + 1):
+        result += num
+    return result
+
+def calculate_total_sum_parallel():
+    start_time = time.time()
+    total = 0
+    num_threads = 2
+
+    # Calculate the range for each thread
+    total_range = 100000000
+    chunk_size = total_range // num_threads
+    ranges = [(i * chunk_size + 1, (i + 1) * chunk_size) for i in range(num_threads)]
+
+    # Create a ThreadPoolExecutor with the desired number of threads
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_threads) as executor:
+        # Use submit to schedule each task (calculate_sum) in the executor
+        futures = [executor.submit(calculate_sum, start, end) for start, end in ranges]
+
+        # Use as_completed to get the results as the tasks complete
+        for future in concurrent.futures.as_completed(futures):
+            total += future.result()
+
+    end_time = time.time()
+    execution_time = end_time - start_time
+
+    return total, execution_time
+
+if __name__ == "__main__":
+    total_sum, execution_time = calculate_total_sum_parallel()
+    print(f"Total sum: {total_sum}")
+    print(f"Execution time: {execution_time:.4f} seconds")
+```
+
+- 실행 결과 : Execution time: 6.6625 seconds
+
+## #4. Multi processing, Multi threading 결과비교 
+값을 계속 result 라는 변수에 할당하여 메모리를 사용하는 작업으로 생각해 멀티프로세싱보다 멀티쓰레딩이 더 빠르게 동작할 것이라 생각할 수 있습니다. 하지만 실제 결과를 보면 멀티프로세싱이 멀티쓰레딩보다 더 빠르게 동작한 것을 확인할 수 있습니다. 해당 결과에는 두가지 원인이 있는데 그 중 하나는 파이썬 GIL(Global Interpreter Lock) 정책으로 멀티 쓰레드를 구성했지만 실제 하나의 쓰레드로만 해당 동작해 단일쓰레도 처리했기 때문입니다. 파이썬은 하나의 프로세스 안에 모든 자원의 락을 글로벌하게 관리함으로써 한 번에 하나의 쓰레드만 자원을 컨트롤 하기 때문에 사실한 result라는 메모리에 저장된 변수는 하나의 쓰레드로만 접근하게 됩니다. 그에 반해 멀티프로세싱은 각각의 고유한 메모리 영역을 가지고 있어 쓰레드에 비해 메모리 사용은 크지만 두개의 프로세스로 처리해 실행시간이 현저히 감소하게 됩니다. 
+
+<br>
+
+## #5. 결론
+위에 결과로 보았을 때 결과적으로 파이썬 정책 때문에 멀티쓰레드는 사실상 제대로된 역할을 하지 못하는 것이라 생각할 수 있습니다. 멀티 쓰레드가 파이썬에서 메모리 접근에 제한이 있지만, CPU 작업이 적고 디스크 등의 I/O 작업이 많은 병렬처리 작업에서는 쓰레드가 가볍기 때문에 더 높은 성능을 보일 수 있습니다. 또, 멀티 프로세스는 메모리에대한 분산 처리로 속도에 이점을 볼 수 있지만 더 많은 메모리를 필요하다는 단점이 존재합니다. 즉, 파이썬에서 병렬처리 작업 시에는 해당 작업이 어떤 작업을 처리하고 있는지 고민해보고 적절한 병렬처리를 사용하는 것이 중요합니다.
+
+<br>
+
+
 ### #참고. Process 구조
 프로세스는 동적 영역인 Stack, Heap과 정적 영역인 데이터 영역(Bss segment, Data segment), 코드 영역(Code segment)로 구분됩니다. 동적 영역인 스탭은 위에서부터 메모리가 할당되며, 힙은 아래에서 부터 사용되지 않는 메모리에 할당됩니다.
 
