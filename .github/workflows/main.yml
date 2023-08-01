@@ -10,3 +10,4 @@ jobs:
       - uses: kentaro-m/auto-assign-action@v1.2.5
         with:
           configuration-path: '.github/auto_assign.yml'
+          repo-token: ${{ secrets.ROBERT_TOKEN }}
