@@ -9,6 +9,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: hkusu/review-assign-action@v1.3.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.ROBERT_MIN }}
         with:
           assignees: ${{ github.actor }} # assign pull request author
 #           reviewers: robert-min
