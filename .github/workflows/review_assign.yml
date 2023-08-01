@@ -1,4 +1,4 @@
-name: Review Assign Test
+name: Review Assign Action
 
 on:
   pull_request:
@@ -8,7 +8,7 @@ jobs:
   assign:
     runs-on: ubuntu-latest
     steps:
-      - uses: hkusu/review-assign-action@v1
+      - uses: hkusu/review-assign-action@v1.3.1
         with:
           assignees: ${{ github.actor }} # assign pull request author
           reviewers: robert-min
