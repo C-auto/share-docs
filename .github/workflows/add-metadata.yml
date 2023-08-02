@@ -3,7 +3,7 @@ name: Add Metadata to Markdown
 on:
   pull_request:
     types:
-      - synchronize
+      - created
 
 jobs:
   add_metadata:
