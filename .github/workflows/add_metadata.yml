@@ -43,4 +43,4 @@ jobs:
           git checkout -b ${{ github.event.pull_request.head.ref }}
           git add .
           git commit -m "Add metadata to Markdown file"
-          git push --set-upstream origin python/hello_python
+          git push -f --set-upstream origin python/hello_python
