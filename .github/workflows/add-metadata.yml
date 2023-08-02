@@ -27,6 +27,7 @@ jobs:
           git fetch origin $BASE_BRANCH
           echo $(git diff --staged)
           echo $(git diff HEAD)
+          echo $(git diff ${{ github.event.pull_request.head.ref }} origin/main)
           DIFF=$(git diff --name-only $BASE_BRANCH ${{ github.event.pull_request.head.ref }})
           echo $DIFF
 
