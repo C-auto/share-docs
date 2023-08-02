@@ -1,0 +1,50 @@
+name: Add Metadata to Markdown
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow on push or pull request events but only for the "main" branch
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Find and update Markdown file
+        id: find_file
+        run: |
+          md_file="${{ github.event.pull_request.head.ref }}.md"
+          echo $md_file
+          if [[ -n "$md_file" ]]; then
+            echo "Found Markdown file: $md_file"
+            
+              if grep -q "<span style=\"background-color:#fff5b1\">Author : " "$md_file"; then
+                echo "Removing existing <span> tag from the first line."
+                sed -i '1s/<span.*span>//i' "$md_file"
+              fi
+            sed -i "1i <span style=\"background-color:#fff5b1\">Author : $GITHUB_ACTOR / Last Update : $(date +'%Y-%m-%d')</span>" "$md_file"
+          else
+            echo "No Markdown files found."
+            exit 1
+          fi
+      - name: Commit and push changes
+        run: |
+          git config --global user.email "robert-min@github.com"
+          git config --global user.name $GITHUB_ACTOR
+          git checkout -b ${{ github.event.pull_request.head.ref }}
+          git add .
+          git commit -m "Add metadata to Markdown file"
+          git push -f --set-upstream origin ${{ github.event.pull_request.head.ref }}
