@@ -24,8 +24,9 @@ jobs:
         id: find_file
         run: |
           test2=$(git diff --name-only HEAD)
-          echo test2
-          test=$(git diff --name-only HEAD |  grep -E '\.md$' | head -n 1)
+          echo $test2
+          echo $GITHUB_REF
+          test=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} |  grep -E '\.md$' | head -n 1)
           echo $test
           md_file=$(git diff --name-only HEAD^ HEAD | grep -E '\.md$' | head -n 1)
           if [[ -n "$md_file" ]]; then
