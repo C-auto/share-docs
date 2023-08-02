@@ -1,4 +1,3 @@
-<span style="background-color:#fff5b1">Author : robert-min / Last Update : 2023-08-02</span>
 # Python 병렬처리 고민. Multi Process? Multi Thread?
 
 고성능 파이썬 백엔드 작업을 위해서는 병렬처리에대한 고민을 한번 쯤 해볼 수 있습니다. 일반적으로 코드 구현에만 집중하여 성능향상에 고민을 해보지 않은 개발자의 경우 병렬처리의 필요성을 경험해보지 못하거나, Process와 Thread의 개념을 이해하지 못하고 있는 경우도 종종 있습니다. 특히 파이썬의 경우 다른 언어에비해 배우기 쉽고 편의성이 좋지만, 실행 속도 측면에서 느리다는 치명적인 단점이 있기 때문에, Thread와 Process에 대한 이해를 바탕으로 Multi Process, Multi Thread 적용에대해 알고있는 것이 중요합니다.
@@ -149,3 +148,4 @@ if __name__ == "__main__":
 - 코드 영역 : 프로그램에 내장되어 있는 소스 코드가 들어가는 영역. 이 영역은 수정 불가능한 기계어로 저장되어 있으며 정적인 특징을 가짐. 
 
 
+<span style="background-color:#fff5b1">Author : robert-min / Last Update : 2023-08-02</span>
