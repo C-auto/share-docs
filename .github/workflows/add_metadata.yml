@@ -38,9 +38,8 @@ jobs:
           fi
       - name: Commit and push changes
         run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name $GITHUB_ACTOR
+          git config --global user.name $GITHUB_ACTOR
           git checkout -b ${{ github.event.pull_request.head.ref }}
           git add .
           git commit -m "Add metadata to Markdown file"
-          git push origin ${{ github.event.pull_request.head.ref }}
+          git push 
