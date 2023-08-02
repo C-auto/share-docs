@@ -23,9 +23,9 @@ jobs:
       - name: Find and update Markdown file
         id: find_file
         run: |
-          test=$(git diff --name-only main $GITHUB_REF |  grep -E '\.md$' | head -n 1)
+          test=$(git diff --name-only HEAD^ HEAD |  grep -E '\.md$' | head -n 1)
           echo $test
-          md_file=$(git diff --name-only HEAD | grep -E '\.md$' | head -n 1)
+          md_file=$(git diff --name-only HEAD^ HEAD | grep -E '\.md$' | head -n 1)
           if [[ -n "$md_file" ]]; then
             echo "Found Markdown file: $md_file"
             sed -i "1i <span style=\"background-color:#fff5b1\">Author : $GITHUB_ACTOR / Last Update : $(date +'%Y-%m-%d')</span>" "$md_file"
