@@ -23,11 +23,12 @@ jobs:
       - name: Find and update Markdown file
         id: find_file
         run: |
-          test2=$(git diff --name-only feature/add-author-date origin/main)
-          echo $test2
-          echo $GITHUB_REF
-          test=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} |  grep -E '\.md$' | head -n 1)
-          echo $test
+          BASE_BRANCH=main
+          git fetch origin $BASE_BRANCH
+          echo ${{ github.event.pull_request.head.ref }}
+          DIFF=$(git diff --name-only $BASE_BRANCH ${{ github.event.pull_request.head.ref }})
+          echo $DIFF
+
           md_file=$(git diff --name-only HEAD^ HEAD | grep -E '\.md$' | head -n 1)
           if [[ -n "$md_file" ]]; then
             echo "Found Markdown file: $md_file"
