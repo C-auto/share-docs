@@ -77,7 +77,60 @@ z = f1(y)
   - f1의 x -> 10
   - main의 y -> 5
 
-할당의 해제는 Stack의 가장 위에 있는 f2 함수부터 해제됩니다. f2 함수 해제 후 f1 함수가 해제되는 f1의 x 변수가 가르키는 int object 10를 가르키는 변수가 없기 때문에 reference counting 0이 됨에 따라 GC에 의해 사라집니다. 마지막으로 main 함수의 변수 z가 11을 가르킴에따라 프로그램 실행이 마무리됩니다.
+할당의 해제는 Stack의 가장 위에 있는 f2 함수부터 해제됩니다. f2 함수 해제 후 f1 함수가 해제되는 f1의 x 변수가 가르키는 int object 10를 가르키는 변수가 없기 때문에 *reference counting 0이 됨에 따라 GC에 의해 사라집니다. 마지막으로 main 함수의 변수 z가 11을 가르킴에따라 프로그램 실행이 마무리됩니다.
 
 참조 : https://woochan-autobiography.tistory.com/867
+
+*reference count : 파이썬의 모든 객체를 카운팅 하는 것을 의미. 객체가 참조될 때 증가하고, 참조가 삭제되면 감소시키는 방식으로 동작. referece count가 0이되면 삭제 대상이 되며 삭제 cycle에 의해 메모리 할당이 해제됨.
+
+<br>
+
+## #4. 효율적인 파이썬 코드 작성
+위의 내용을 정리하면, 매서드와 변수는 스택 메모리에 작성되며, 스택 메모리는 해당 매서드가 리턴 될때마다 자동으로 제거됩니다. 그리고 객체(Object)와 인스턴스 변수(객체에서 정의된 변수)는 힙메모리에 저장되며 힙 메모리는 가비지컬렉터(GC)에 의해 reference counting을 통해 제거됩니다. 사실 파이썬의 경우 메모리 관리를 조정할 수 있는 부분이 거의 없어 일반적으로 메모리 관리를 직접적으로 사용해서 성능을 높이는 방법이 거의(?) 없습니다. 다만, 파이썬에서의 값들은 모두 객체로 저장이되면 해당 객체의 메모리를 관리하는 GC의 부하나, 메모리를 자동으로 처리하는 과정에서 발생하는 여러 문제가 있을 수 있기 때문에, 효율적인 파이썬 코드를 작성하는 것이 중요합니다.
+
+아래는 효율적인 파이썬 코드 작성 예시입니다.
+
+### 1. 문자열에 `+` 연산자 피하기
+- 문자열을 연결하기 위해 `+` 연산자를 사용할 경우 문자마다 객체를 생성하기 때문에 새 메모리를 할당합니다.
+- 새 메모리할당을 최소화하는 것이 효율적인 파이썬 코드를 작성할 수 있습니다.
+
+```python
+# wrong case
+msg = "hello" + add_msg + "hello"
+
+# best case
+msg = "hello %s world" % add_msg
+```
+
+### 2. 제너레이터 사용하기
+- 아래 예시를 볼 때, `wrong case`를 보면 새로운 결과를 찾을 때마다 result에 append 매서드를 호출함을 확인할 수 있습니다.
+- `best case`의 제너레이터를 사용한 경우 한 번에 모든 항목을 반환하는 것이 하닌 한 번에 하나의 결과를 반환하는 함수를 제공합니다.
+- 즉, 리스트의 경우 append 매서드를 사용함으써 메모리를 할당-삭제를 반복하기도하며, 작업 메모리에 모든 입력과 출력을 저장해야함으로 제너레이터를 사용하는 것이 더 효율적인 코드를 작성할 수 있습니다.
+
+```python
+# 문장의 공백의 인덱서를 반환하는 코드
+# wrong case
+def index_words(text):
+  result = []
+  if text:
+    result.append(0)
+  for idx, letter in enumerate(text):
+    if letter == " ":
+      result.append(idx + 1)
+  return result
+
+# best case
+def index_words_iter(text):
+  if text:
+    yield 0
+  for idx, letter in enumerate(text):
+    if letter == " ":
+      yield idx + 1
+```
+
+(효율적인 파이썬 코드 작성은 추후 추가할 예정입니다.)
+
+
+
+
 
